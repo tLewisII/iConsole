@@ -108,6 +108,8 @@ iConsoleLogLevel;
 + (void)show;
 + (void)hide;
 
+- (void)redirectConsoleOutput;
+
 @end
 
 

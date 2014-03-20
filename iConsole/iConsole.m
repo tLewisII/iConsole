@@ -57,6 +57,8 @@
 @property (nonatomic, strong) UIButton *actionButton;
 @property (nonatomic, strong) NSMutableArray *log;
 @property (nonatomic, assign) BOOL animating;
+@property (nonatomic, assign) NSUInteger lastOutputIndex;
+@property (strong, nonatomic) NSTimer *readingTimer;
 
 - (void)saveSettings;
 
@@ -579,7 +581,7 @@ void exceptionHandler(NSException *exception)
 
 + (void)log:(NSString *)format arguments:(va_list)argList
 {	
-	NSLogv(format, argList);
+//	NSLogv(format, argList);
 	
     if ([self sharedConsole].enabled)
     {
@@ -666,6 +668,31 @@ void exceptionHandler(NSException *exception)
 	[[iConsole sharedConsole] hideConsole];
 }
 
+- (void)redirectConsoleOutput {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                                         NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *logPath = [documentsDirectory stringByAppendingPathComponent:@"console.log"];
+    freopen([logPath fileSystemRepresentation],"a+",stderr);
+    [iConsole sharedConsole].lastOutputIndex = 0;
+    [iConsole sharedConsole].readingTimer = [NSTimer timerWithTimeInterval:5 target:self selector:@selector(tick) userInfo:nil repeats:YES];
+    [[NSRunLoop mainRunLoop]addTimer:[iConsole sharedConsole].readingTimer forMode:NSDefaultRunLoopMode];
+}
+
+- (void)tick {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                                         NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *logPath = [documentsDirectory stringByAppendingPathComponent:@"console.log"];
+    
+    NSData *fileData = [NSData dataWithContentsOfFile:logPath options:NSDataReadingUncached error:nil];
+    NSString *logFile = [[NSString alloc]initWithData:fileData encoding:NSUTF8StringEncoding];
+    NSString *logme = [logFile substringFromIndex:self.lastOutputIndex];
+    self.lastOutputIndex = logFile.length;
+    if(logme.length > 0) {
+     [iConsole log:logme];
+    }
+}
 @end
 
 

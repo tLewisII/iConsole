@@ -13,20 +13,13 @@
 @implementation HelloWorldViewController
 
 - (IBAction)sayHello:(id)sender
-{	
-	NSString *text = _field.text;
-	if ([text isEqualToString:@""])
-	{
-		text = @"World";
+{
+    NSLog(@"hello");
 	}
-	
-	_label.text = [NSString stringWithFormat:@"Hello %@", text];
-	[iConsole info:@"Said '%@'", _label.text];
-}
 
 - (IBAction)crash:(id)sender
 {
-	[[NSException exceptionWithName:@"HelloWorldException" reason:@"Demonstrating crash logging" userInfo:nil] raise];
+    NSLog(@"crash");
 }
 
 - (void)viewDidLoad
